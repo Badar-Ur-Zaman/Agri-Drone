@@ -5,6 +5,7 @@ import "./ImageUpload.css";
 const ImageUpload = () => {
   const [file, setFile] = useState(null);
   const [uploadedImagesUrl, setUploadedImagesUrl] = useState([]);
+  const [message, setMessage] = useState({ text: "", type: "" });
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -15,7 +16,7 @@ const ImageUpload = () => {
 
   const handleUpload = async () => {
     if (!file) {
-      alert("Please select a file first!");
+      setMessage({ text: "Please select a file first!", type: "error" });
       return;
     }
 
@@ -27,38 +28,42 @@ const ImageUpload = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // setUploadedImageUrl(response.data.imageUrl);
-      setUploadedImagesUrl((prevImages) => [...prevImages, response.data.imageUrl]); // Append new image
-      alert("Image uploaded successfully!");
+      setUploadedImagesUrl((prevImages) => [...prevImages, response.data.imageUrl]); 
+      setMessage({ text: "Image uploaded successfully!", type: "success" });
+      setFile(null); // Clear file selection after upload
     } catch (error) {
+      setMessage({ text: "Error uploading image. Please try again.", type: "error" });
       console.error("Error uploading image:", error);
     }
   };
 
   return (
-    <div>
-      <div className="container">
-        <h2>Upload an Image</h2>
-        
-        <label htmlFor="file-upload" className="custom-file-upload">
-          Choose File
-        </label>
-        <input id="file-upload" type="file" onChange={handleFileChange} />
+    <div className="upload-container">
+      <h2>Upload an Image</h2>
 
-        <button onClick={handleUpload}>Upload</button>
-      </div>
-      <div>
-        {uploadedImagesUrl && (
-          <div className="preview-container">
-            <p>Uploaded Images:</p>
-              <div className="image-grid">
-                {uploadedImagesUrl.map((imageUrl, index) => (
-                  <img key={index} src={imageUrl} alt={`Uploaded ${index}`} />
-                ))}
-              </div>
+      <label htmlFor="file-upload" className="custom-file-upload">
+        Choose File
+      </label>
+      <input id="file-upload" type="file" onChange={handleFileChange} />
+
+      <button onClick={handleUpload}>Upload</button>
+
+      {message.text && (
+        <div className={`response-message ${message.type}`}>
+          {message.text}
+        </div>
+      )}
+
+      {uploadedImagesUrl.length > 0 && (
+        <div className="preview-container">
+          <p>Uploaded Images:</p>
+          <div className="image-grid">
+            {uploadedImagesUrl.map((imageUrl, index) => (
+              <img key={index} src={imageUrl} alt={`Uploaded ${index}`} />
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
